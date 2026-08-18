@@ -9,119 +9,86 @@ basics in Kubernetes and apply them in real-world scenarios, i.e. in
 multiple environments and in cross-team collaboration.
 
 To submit the answers to this lab session, please fill in your answers
-in this document in-place. This should be done before the beginning of
+in this document in place. This should be done before the beginning of
 the next course.
 
-## Exercise 1 - Hello Server
+## Exercise 1 - Create Namespace
 
-Expose the demo application
-[`hello-server`](https://hub.docker.com/r/mincongclassroom/hello-server)
-in Kubernetes.
+Create a new namespace called `classroom`. Then, list all the existing
+namespaces in the Kubernetes cluster.
 
-Create a new Deployment called `hello-server-deployment` for the
-application `hello-server`
-(https://hub.docker.com/r/mincongclassroom/hello-server). This is the
-image that you have fixed in Lab Session 1. The Deployment should have 1
-replica. Then, expose the application as an internal Service called
-`hello` in Kubernetes, under the port 80. Validate that the
-implementation is working and document it in this page.
+## Exercise 2 - Deploy Team Info Server
 
-## Exercise 2 - PetClinic Microservice
+Deploy and expose the classroom-specific application `team-info-server`
+in the namespace `classroom` in Kubernetes.
 
-Under the existing stack of the Spring PetClinic (deployed in Lab
-Session 3), expose the API gateway as a Service of type NodePort under
-the port `30000`. Validate that the solution implementation is working
-and document it in this page.
+Create a new Deployment called `team-info` for the Docker image
+[`mincongclassroom/team-info-server`](https://hub.docker.com/r/mincongclassroom/team-info-server).
+This is the image that you have used in Lab Session 1. The Deployment
+should have 1 replica. Then expose the application as an internal
+Service named `team-info` in Kubernetes on port 80. Note that the web
+server may not start successfully on the first attempt, so you need to
+repair it (in the same way that you fixed it in Lab Session 1). Inspect
+the Pod and its logs to understand the underlying issues. You need to
+store the manifest (YAML file) under the path
+`k8s/lab-4/app-team-info.yaml`, which contains both the Service and the
+Deployment.
 
-## Exercise 3 - PetClinic Environments
+Then, you need to validate that the implementation is working and
+document it on this page. You need to perform the following scenarios:
 
-Create two namespaces: `prod` and `dev`. Each namespace should contain
-the whole stack in microservice, including the API gateway and the
-backend services.
+1.  Switch your current context to the namespace `classroom`, use a
+    temporary Pod to query the service `team-info` via an HTTP request
+2.  Switch your current context to the namespace `default`, use a
+    temporary Pod to query the service `team-info` via an HTTP request
 
-- In the prod namespace, use version `3.0` of the Docker images, created
-  in Lab Session 3. All resources should contain the label `env=prod`.
-- In the dev namespace, use version `3.0` of the Docker images, created
-  in Lab Session 3. Note: later on, they will be replaced by new images
-  `4.x` created in this session. All resource should contain the label
-  `env=dev`.
+In the report, you need to document how you switch the namespace; how
+you verify the Kubernetes resources in that namespace; how you create a
+temporary Pod; how you perform the HTTP request, especially the URL used
+and its meaning for the DNS; and how you analyze the HTTP response. Did
+you notice any difference for the URLs used when you are in namespace
+`classroom` or `default`?
 
-Also, add the label `clinic=${clinic}`. Is the Pet Clinic still
-accessible? If not, please fix it. Describe your observations and fixes
-in this page.
+Here are some additional information:
 
-## Exercise 4 - Cross-team Collaboration
+- Source code: <https://github.com/mincong-classroom/team-info-server>
+- Docker repo:
+  <https://hub.docker.com/r/mincongclassroom/team-info-server>
+- Command
+  [`kubectl config set-context`](https://kubernetes.io/docs/reference/kubectl/generated/kubectl_config/kubectl_config_set-context/)
 
-In this exercise, you will collaborate with other teams to improve the
-Pet Clinic service together in the `dev` namespace. Each team uses the
-Kubenetes cluster in your computer, but you can deploy new Docker image
-to update the logic of the microservices, and update the Kubernetes
-resources (Deployment, Service, …) to change your infrastructure.
+## Exercise 3 - PetClinic Integration
 
-## Exercise 4C - Email Support
+The Spring PetClinic web application already ships with an “About” page:
+the header has an “about” navigation item that opens a page which
+fetches team information from the API endpoint `/api/about` and displays
+it. Out of the box that page shows an error, because the request is not
+routed anywhere yet.
 
-The pet owners are managed by the `customers-service`. Currently,
-registering an owner does not require an email. But this is an important
-way of communication nowadays. Could you add this feature? You should
-implemente the backend logic and collaborate with the frontend team for
-the frontend logic.
+Your task is to make the About page work by configuring the
+**networking** — you do not write any frontend or Java code. When users
+visit the web application (<http://localhost:8080>) and open the About
+page, it should display the information served by the **Team Info
+Server** you deployed in Exercise 2, such as:
 
-Here are some requirements:
+| Key          | Value                                         |
+|:-------------|:----------------------------------------------|
+| Team         | test                                          |
+| Team members | Alice DOE, Bob SMITH                          |
+| Source code  | https://github.com/mincong-classroom/k8s-test |
 
-- In the UI, the owner registration form should contain a new field
-  “Email”
-- In the UI, email should be read-only when editing owner’s information
-- In the UI, email should be displayed in the owner page
-- In the backend, the email should be validated
-- In the backend, the email information should be persisted in the
-  database
-- In the backend, the email should be part of the Owner Listing API
+Concretely, route requests for `/api/about` from the API Gateway to the
+`team-info` Service in the `classroom` namespace. You need to store the
+updated manifest (YAML file) under the path
+`k8s/lab-4/microservices.yaml`.
 
-The result should be built and deployed as image `4.x` in DockerHub
-(e.g. `4.0`, `4.1`, …). Don’t overwrite existing images. If you need
-additional changes, push another image.
+IMPORTANT: do not hard-code the information in the API Gateway. The goal
+is to practice your networking skills in Kubernetes — in particular
+cross-namespace Service resolution via DNS — and your understanding of
+inter-service communication.
 
-Describe what you implemented here, including key code changes, UI
-changes. Also, how you validate your changes.
-
-## Exercise 4V - Veterinarian Qualification
-
-The pet owners needs more information from the veterinarians before
-trusting them to treat their pets. Please add a field “diplomas” to
-represent a list of additional diplomas that the veterinarian has. It
-helps justifying his/her specialization. You can use the following
-abbreviations:
-
-- `DESV`: Diplôme d’Études Spécialisées Vétérinaires — equivalent to a
-  French medical specialization.
-- `CES`: Certificat d’Études Spécialisées — an older qualification, but
-  still valid.
-- `DIPL`: European or American “Diplomate” titles (e.g. Dipl. ECVS for
-  surgery, Dipl. ECVIM for internal medicine, etc.) — these represent
-  the highest level of expertise recognized internationally.
-
-Here are some requirements
-
-- This new field should be part of the Veterinarians Listing API
-- This new field should be displayed in the Veterinarians page
-- This new field should be persisted in the database
-
-Then, create a new API to register a veterinarian, similar to the “owner
-registration”.
-
-## Exercise 4F - UI Support
-
-Collaborate with the Customers team and the Veterinarian team to support
-the new use cases: the email of the customer, and the diplomas of the
-veterinarians.
-
-Email support:
-
-- The owner registration form should contain a new field “Email”
-- Email should be read-only when editing owner’s information
-- Email should be displayed in the owner page
-
-Veterinarians support:
-
-- Diplomas should be part of the Verterinarians Listing
-- A new page should be created for registering a new Verterinarian
+Hint: if the About page cannot load the information, use the logs to
+trace the request. The API Gateway runs with verbose (DEBUG) logging —
+read its logs with `kubectl logs` to see whether your request is
+received and which backend route it matches, and read the Team Info
+Server’s logs to check whether the request reached it.

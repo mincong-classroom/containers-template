@@ -33,10 +33,12 @@ timeline
 Create a new ReplicaSet with 2 replicas and the Docker image
 “spring-petclinic” that you developed in Lab Session 1. Use labels
 `app=spring-petclinic` and `team=${team}` for both the ReplicaSet and
-the underlying Pods. The Pods should expose port 8080 to receive
-incoming traffic. The container name should be `main` in the ReplicaSet.
-Persist the Kubernetes manifest (YAML file) in the Git repository as
-file `k8s/replicaset-petclinic.yaml`.
+the underlying Pods. The underlying container should use port 8080 to
+receive incoming traffic. The container name should be `main` in the
+ReplicaSet. Please don’t use the local image; instead, you should use
+the Docker Image published to Docker Hub. Persist the Kubernetes
+manifest (YAML file) in the Git repository as file
+`k8s/replicaset-petclinic.yaml`.
 
   
 
@@ -72,10 +74,10 @@ now? Why?
 
 Similar to Exercise 1, create a new Deployment with 2 replicas using the
 Docker image “spring-petclinic”. Use labels `app=spring-petclinic` and
-`team=${team}` for both the Deployment and the underlying Pods. The Pods
-should expose the port 8080 to receive incoming traffic. The container
-name should be `main` in the Deployment. Persist the Kubernetes manifest
-(YAML file) in the Git repository as file
+`team=${team}` for both the Deployment and the underlying Pods. The
+underlying container should use port 8080 to receive incoming traffic.
+The container name should be `main` in the Deployment. Persist the
+Kubernetes manifest (YAML file) in the Git repository as file
 `k8s/deployment-petclinic.yaml`.
 
   
@@ -104,7 +106,7 @@ name in lowercase. Observe the rollout history.
 
 Try to disrupt the Deployment by using a Docker image tag that does not
 exist. What happens? Consider checking the ReplicaSets related to this
-Deployment.
+Deployment. Can you access the website from your browser?
 
   
 
@@ -165,9 +167,9 @@ kubectl apply -f https://mincong.io/esigelec/lab/microservice.yaml
 Create a new Docker image for the API Gateway and the PetClinic UI. This
 is a replacement of the default image
 `springcommunity/spring-petclinic-api-gateway`. The new UI should
-include your clinic name in the footer of the Spring PetClinic UI, such
-as “Pet Clinic: Center” or “Pet Clinic: West”. Publish your result to
-Docker Hub. The target repository is:
+include your clinic name (your team color) in the footer of the Spring
+PetClinic UI, such as “Pet Clinic: Red” or “Pet Clinic: Green”. Publish
+your result to Docker Hub. The target repository is:
 
     mincongclassroom/spring-petclinic-api-gateway-${clinic}
 
