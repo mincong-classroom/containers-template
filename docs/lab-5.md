@@ -1,4 +1,4 @@
-# Configuration and Storage
+# Configuration
 
 Lab Session 5 - 30 Oct, 2025
 
@@ -13,8 +13,15 @@ learned from the previous chapters.
 
 ## Exercise 1 - Create Secret
 
-Create a Secret called “openai” in Kubernetes. This Secret should
-contain one single key called “api-key”.
+In the `dev` namespace, create a new Opaque Secret called “openai”. This
+Secret should contain one single key called “api-key”. The value of the
+API key is communicated on Microsoft Teams. Please verify that the
+secret is created. In the validation, only use a prefix of the actual
+value to prove that the resource is created.
+
+> [!CAUTION]
+> Don’t commit the API value to Git. Don’t commit the key
+> directly, its base64-encoded value, or the Secret manifest (YAML).
 
   
 
@@ -26,24 +33,43 @@ contain one single key called “api-key”.
 
 ## Exercise 2 - Create Workload
 
-Develop a solution for running the AI service in Kubernetes. You can
-find the Spring Boot application image from Docker Hub:
+In the `dev` namespace, develop a solution for running the AI service in
+Kubernetes. This feature is powered by the `genai-service` from the
+Spring Community. You need to integrate this microservice into the
+existing stack (api-gateway, customer-service, vets-service, etc). To do
+this, you need to deploy this workload to Kubernetes as a Deployment.
+Also, you need to set up the networking part to enable internal
+communication between this AI service and other existing services. The
+containers should use the port 8084 to accept HTTP requests. You will
+also need to check the configuration of the API Gateway to ensure that
+it routes the related HTTP requests to the GenAI service.
+
+You can find the Spring Boot application image from Docker Hub:
 [`springcommunity/spring-petclinic-genai-service`](https://hub.docker.com/r/springcommunity/spring-petclinic-genai-service)
 and the related source code on GitHub
 ([link](https://github.com/spring-petclinic/spring-petclinic-microservices/tree/main/spring-petclinic-genai-service)).
 You can also visit the section [“Integrating the Spring AI
 Chatbot”](https://github.com/spring-petclinic/spring-petclinic-microservices/tree/main?tab=readme-ov-file#integrating-the-spring-ai-chatbot)
 in the documentation to learn more about its setup. Most importantly,
-you need to start the workload with the following configuration as an
-environment variable:
+you will need the following environment variable `OPENAI_API_KEY` to
+start the workload:
 
 ``` sh
 OPENAI_API_KEY='sk-...'
 ```
 
 Please commit your changes to the file `k8s/lab5.microservices.yaml`.
-However, DO NOT commit the API key to GitHub. You should reference the
-Secret created in Exercise 1.
+
+Hints:
+
+- You should reference the Secret “openai” created in Exercise 1.
+- A new version of the Pet Clinic Micoservices stack is available under
+  <https://mincong.io/esigelec/lab/microservice5.yaml>
+- The configuration of the API Gateway is defined under the ConfigMap
+  “api-gateway-config” in the “microservice5.yaml”.
+- You can verify whether the API key is referenced by the GenAI service
+  by printing the value of the environment variable via a `kubectl exec`
+  command.
 
   
 
